@@ -1,19 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../api/axios";
-import { getUser } from "../utils/auth";
-import { Card, CardBody, CardHeader, CardTitle } from "../components/ui/Card";
-import { StatusBadge } from "../components/ui/StatusBadge";
-import { Button } from "../components/ui/Button";
-import { Textarea } from "../components/ui/Textarea";
-import { Skeleton, SkeletonText } from "../components/ui/Skeleton";
-
-function isBreached(ticket) {
-  if (!ticket?.SLA_deadline) return false;
-  const due = new Date(ticket.SLA_deadline).getTime();
-  const now = Date.now();
-  return due < now && String(ticket.status).toLowerCase() !== "closed";
-}
+import { getToken } from "../utils/auth";
 
 export default function TicketDetails() {
   const { id } = useParams();
@@ -21,127 +9,116 @@ export default function TicketDetails() {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
-  const user = getUser();
-
-  useEffect(() => {
-    const fetchTicket = async () => {
-      try {
-        const { data } = await api.get(`/api/tickets/${id}`);
-
-        // backend returns the ticket object directly
-        setTicket(data);
-        setComments(data.comments || []);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load ticket details.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTicket();
-  }, [id, user?.token]);
-
-  const handleAddComment = async (e) => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
-
+  const fetchTicket = async () => {
     try {
-      const { data } = await api.post(`/api/tickets/${id}/comments`, {
-        text: newComment,
+      const res = await api.get(`/api/tickets/${id}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
       });
-
-      // append the created comment
-      setComments((prev) => [...prev, data]);
-      setNewComment("");
+      setTicket(res.data);
+      setComments(res.data.comments || []);
     } catch (err) {
-      console.error(err);
-      alert("Error adding comment.");
+      console.error("Failed to fetch ticket:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (loading)
-    return (
-      <div className="mx-auto mt-6">
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-1/2" />
-          </CardHeader>
-          <CardBody>
-            <SkeletonText lines={3} />
-          </CardBody>
-        </Card>
-      </div>
-    );
-  if (error)
-    return (
-      <div className="mx-auto mt-6">
-        <Card>
-          <CardBody>
-            <p className="text-sm text-rose-700">{error}</p>
-          </CardBody>
-        </Card>
-      </div>
-    );
+  const addComment = async (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    try {
+      const res = await api.post(
+        `/api/tickets/${id}/comments`,
+        { text: newComment },
+        {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        }
+      );
+      setComments([...comments, res.data]);
+      setNewComment("");
+    } catch (err) {
+      console.error("Failed to add comment:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchTicket();
+  }, []);
+
+  if (loading) return <p className="text-center mt-10">Loading ticket...</p>;
+  if (!ticket)
+    return <p className="text-center text-red-500 mt-10">Ticket not found.</p>;
 
   return (
-    <div className="mx-auto mt-6">
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between gap-3">
-            <CardTitle>{ticket?.title}</CardTitle>
-            <StatusBadge status={ticket?.status} />
-          </div>
-        </CardHeader>
-        <CardBody>
-          {ticket?.description && (
-            <p className="text-sm text-gray-700 mb-4">{ticket.description}</p>
-          )}
+    <div className="max-w-3xl mx-auto mt-10">
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-md border border-gray-100 p-8">
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-gray-900">
+            {ticket.title}
+          </h1>
+          <p className="text-gray-600 mt-2 whitespace-pre-line">
+            {ticket.description}
+          </p>
 
-          <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600 mb-4">
-            <span>Created: {new Date(ticket.createdAt).toLocaleDateString()}</span>
-            {ticket.SLA_deadline && (
-              <span className={isBreached(ticket) ? "text-rose-600" : ""}>
-                SLA due: {new Date(ticket.SLA_deadline).toLocaleDateString()}
+          <div className="flex items-center gap-3 mt-4 text-sm text-gray-500">
+            <span>
+              Status:{" "}
+              <span className="capitalize font-medium text-gray-700">
+                {ticket.status}
               </span>
-            )}
-            {ticket.assignedTo?.name && (
-              <span>Assigned: {ticket.assignedTo.name}</span>
+            </span>
+            <span>•</span>
+            <span>
+              Created on {new Date(ticket.createdAt).toLocaleDateString()}
+            </span>
+          </div>
+
+          {ticket.SLA_deadline && (
+            <p className="text-sm text-gray-500 mt-1">
+              SLA Deadline: {new Date(ticket.SLA_deadline).toLocaleDateString()}
+            </p>
+          )}
+        </div>
+
+        <hr className="my-6" />
+
+        <div>
+          <h2 className="text-lg font-semibold mb-3">Comments</h2>
+          <div className="space-y-4 max-h-80 overflow-y-auto pr-1">
+            {comments.length === 0 ? (
+              <p className="text-gray-500 text-sm">No comments yet.</p>
+            ) : (
+              comments.map((c, i) => (
+                <div
+                  key={i}
+                  className="bg-gray-50 border border-gray-100 rounded-lg p-3"
+                >
+                  <p className="text-sm text-gray-800">{c.text}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {new Date(c.createdAt).toLocaleString()}
+                  </p>
+                </div>
+              ))
             )}
           </div>
 
-          <h2 className="text-base font-medium mb-3">Comments</h2>
-          {comments.length === 0 ? (
-            <Card className="mb-4">
-              <CardBody>
-                <p className="text-sm text-gray-600">No comments yet.</p>
-              </CardBody>
-            </Card>
-          ) : (
-            <ul className="space-y-3 mb-6">
-              {comments.map((c) => (
-                <li key={c._id} className="rounded-md border border-gray-100 bg-gray-50 p-3">
-                  <p className="text-sm text-gray-800">{c.text}</p>
-                  <div className="mt-1 text-[11px] text-gray-500">
-                    — {c.author?.name || c.user?.name || "Unknown"} at {new Date(c.createdAt).toLocaleString()}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <form onSubmit={handleAddComment} className="space-y-3">
-            <Textarea
+          <form onSubmit={addComment} className="mt-5 flex gap-2">
+            <input
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Write a comment..."
-              rows={5}
+              className="flex-1"
             />
-            <Button type="submit">Add Comment</Button>
+            <button
+              type="submit"
+              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+            >
+              Send
+            </button>
           </form>
-        </CardBody>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

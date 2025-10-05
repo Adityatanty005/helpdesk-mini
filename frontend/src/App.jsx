@@ -5,7 +5,6 @@ import TicketList from "./pages/TicketList";
 import TicketNew from "./pages/NewTicket";
 import TicketDetail from "./pages/TicketDetails";
 import { getUser, clearToken, clearUser } from "./utils/auth";
-import { Button, ButtonLink } from "./components/ui/Button";
 
 function Header() {
   const user = getUser();
@@ -18,31 +17,32 @@ function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-10 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-b border-gray-100">
-      <div className="max-w-[var(--max-w-content)] mx-auto px-4 py-3 flex items-center justify-between">
-        <Link to="/tickets" className="text-lg sm:text-xl font-semibold text-gray-900">
+    <header className="sticky top-0 z-10 backdrop-blur bg-white/80 border-b border-gray-200">
+      <div className="max-w-[var(--max-w-content)] mx-auto flex items-center justify-between px-5 py-3">
+        <Link to="/tickets" className="text-xl font-semibold tracking-tight">
           <span className="text-indigo-600">Help</span>Desk
         </Link>
-        <nav className="flex items-center gap-2 sm:gap-3">
-          <ButtonLink to="/tickets/new" size="sm" className="hidden sm:inline-flex">
-            + New Ticket
-          </ButtonLink>
+
+        <nav className="flex items-center gap-4">
           {user ? (
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="hidden sm:block text-sm text-gray-700">{user.name}</div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+            <>
+              <span className="hidden sm:block text-sm text-gray-600">
+                {user.name}
+              </span>
+              <button
                 onClick={handleLogout}
+                className="px-3 py-1.5 text-sm bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-md"
               >
                 Logout
-              </Button>
-            </div>
+              </button>
+            </>
           ) : (
-            <ButtonLink to="/login" variant="ghost" size="sm">
+            <Link
+              to="/login"
+              className="px-3 py-1.5 text-sm text-indigo-600 border border-indigo-600 rounded-md hover:bg-indigo-50"
+            >
               Login
-            </ButtonLink>
+            </Link>
           )}
         </nav>
       </div>
@@ -52,9 +52,9 @@ function Header() {
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50">
       <Header />
-      <main className="max-w-[var(--max-w-content)] mx-auto p-4 sm:p-6">
+      <main className="max-w-[var(--max-w-content)] mx-auto p-5">
         <Routes>
           <Route path="/" element={<Navigate to="/tickets" />} />
           <Route path="/login" element={<LoginPage />} />

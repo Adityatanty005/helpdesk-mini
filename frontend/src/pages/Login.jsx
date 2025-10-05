@@ -17,50 +17,49 @@ export default function LoginPage() {
       setToken(res.data.token);
       setUser(res.data);
       navigate("/tickets");
-    } catch (err) {
-      console.error(err);
+    } catch {
       setError("Invalid credentials");
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center min-h-[80vh] px-4">
       <form
         onSubmit={handleLogin}
-        className="bg-white rounded-lg shadow p-6 w-96"
+        className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-md w-full max-w-sm p-8 border border-gray-100"
       >
-        <h1 className="text-2xl font-semibold mb-4 text-center text-indigo-600">
-          HelpDesk
+        <h1 className="text-2xl font-bold text-center text-indigo-600 mb-6">
+          Sign in to HelpDesk
         </h1>
 
-        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+        {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
         <input
           type="email"
           placeholder="Email"
+          className="mb-3"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-gray-200 rounded-md p-2 mb-3"
           required
         />
 
         <input
           type="password"
           placeholder="Password"
+          className="mb-4"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-gray-200 rounded-md p-2 mb-4"
           required
         />
 
         <button
           type="submit"
-          className="inline-flex items-center bg-indigo-600 text-white px-4 py-2 rounded-md w-full hover:bg-indigo-700"
+          className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
         >
           Login
         </button>
 
-        <p className="text-center mt-4 text-sm text-gray-600">
+        <p className="text-center text-sm text-gray-600 mt-4">
           Don’t have an account?{" "}
           <Link to="/register" className="text-indigo-600 hover:underline">
             Register

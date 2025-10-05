@@ -1,41 +1,29 @@
 import { useState } from "react";
-import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
-import { Card, CardBody, CardHeader, CardTitle } from "../components/ui/Card";
-import { Button } from "../components/ui/Button";
-import { Field, Input, Label } from "../components/ui/Input";
-import { Textarea } from "../components/ui/Textarea";
+import api from "../api/axios";
+import { getToken } from "../utils/auth";
 
 export default function NewTicket() {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [SLA_deadline, setSLA_deadline] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({ title: "", description: "", category: "" });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
-
-    // SLA_deadline is required by the backend model
-    if (!SLA_deadline) {
-      setError("Please provide an SLA deadline.");
-      setLoading(false);
-      return;
-    }
+    setLoading(true);
 
     try {
-      // the api client automatically injects the token header
-      const newTicket = { title, description };
-      if (SLA_deadline) newTicket.SLA_deadline = SLA_deadline;
-      await api.post("/api/tickets", newTicket);
-
-      // After creating, navigate back to tickets list
+      await api.post("/api/tickets", form, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
       navigate("/tickets");
     } catch (err) {
-      console.error(err);
       setError("Failed to create ticket. Please try again.");
     } finally {
       setLoading(false);
@@ -43,59 +31,71 @@ export default function NewTicket() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Create New Ticket</CardTitle>
-        </CardHeader>
-        <CardBody>
-          {error && (
-            <div className="mb-4 text-sm text-rose-700">{error}</div>
-          )}
-          <form onSubmit={handleSubmit} className="grid gap-4">
-            <Field>
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter ticket title"
-                required
-              />
-            </Field>
+    <div className="max-w-2xl mx-auto mt-10">
+      <div className="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-md border border-gray-100">
+        <h1 className="text-2xl font-semibold text-indigo-600 mb-6">
+          Create a New Ticket
+        </h1>
 
-            <Field>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe the issue..."
-                rows={6}
-                required
-              />
-            </Field>
+        {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
-            <Field>
-              <Label htmlFor="sla">SLA deadline</Label>
-              <Input
-                id="sla"
-                type="date"
-                value={SLA_deadline}
-                onChange={(e) => setSLA_deadline(e.target.value)}
-                required
-              />
-            </Field>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Title
+            </label>
+            <input
+              name="title"
+              placeholder="Short issue title"
+              value={form.title}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-            <div className="pt-2">
-              <Button type="submit" disabled={loading}>
-                {loading ? "Creating..." : "Create Ticket"}
-              </Button>
-            </div>
-          </form>
-        </CardBody>
-      </Card>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Description
+            </label>
+            <textarea
+              name="description"
+              placeholder="Describe the issue in detail"
+              rows={4}
+              value={form.description}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Category
+            </label>
+            <select
+              name="category"
+              value={form.category}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Select category</option>
+              <option value="technical">Technical</option>
+              <option value="billing">Billing</option>
+              <option value="account">Account</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition ${
+              loading ? "opacity-70 cursor-not-allowed" : ""
+            }`}
+          >
+            {loading ? "Creating..." : "Create Ticket"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

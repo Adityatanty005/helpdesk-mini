@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { Link } from "react-router-dom";
-import { Card, CardBody } from "../components/ui/Card";
-import { Button, ButtonLink } from "../components/ui/Button";
-import { Input, Label, Field } from "../components/ui/Input";
-import { StatusBadge } from "../components/ui/StatusBadge";
-import { Skeleton, SkeletonText } from "../components/ui/Skeleton";
 
 const LIMIT = 10;
 
@@ -34,6 +29,7 @@ export default function Tickets() {
       } else {
         setLoadingMore(true);
       }
+
       const res = await api.get("/api/tickets", {
         params: {
           limit: LIMIT,
@@ -42,6 +38,7 @@ export default function Tickets() {
           breached: breachedOnly ? "true" : undefined,
         },
       });
+
       const items = res.data.items || [];
       setTickets((prev) => (reset ? items : [...prev, ...items]));
       const newOffset = (reset ? 0 : offset) + items.length;
@@ -73,111 +70,58 @@ export default function Tickets() {
     fetchTickets({ reset: true });
   };
 
+  // ✅ Move the return INSIDE the component
   return (
-    <div className="mx-auto mt-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-        <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">Your Tickets</h1>
-        <ButtonLink to="/tickets/new" size="md">+ New Ticket</ButtonLink>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-gray-900">Tickets</h1>
+        <Link
+          to="/tickets/new"
+          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+        >
+          + New Ticket
+        </Link>
       </div>
 
-      <form onSubmit={onSubmitSearch} className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Field className="sm:col-span-2">
-          <Label htmlFor="search">Search</Label>
-          <Input
-            id="search"
-            placeholder="Search by title, description, latest comment..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </Field>
-        <div className="flex items-end gap-2">
-          <Button type="submit" className="w-full sm:w-auto">Search</Button>
-          <Button
-            type="button"
-            variant={breachedOnly ? "primary" : "secondary"}
-            onClick={() => setBreachedOnly((v) => !v)}
-          >
-            SLA breached
-          </Button>
-        </div>
-      </form>
-
-      {error && (
-        <Card className="mb-4">
-          <CardBody>
-            <p className="text-sm text-rose-700">{error}</p>
-          </CardBody>
-        </Card>
-      )}
-
       {loading ? (
-        <div className="grid gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i} className="hover:shadow-md transition-shadow">
-              <CardBody>
-                <Skeleton className="h-5 w-2/3 mb-2" />
-                <SkeletonText lines={2} />
-              </CardBody>
-            </Card>
-          ))}
-        </div>
+        <p>Loading...</p>
       ) : tickets.length === 0 ? (
-        <Card>
-          <CardBody>
-            <p className="text-gray-600">No tickets found. Try adjusting your search.</p>
-          </CardBody>
-        </Card>
+        <div className="text-center text-gray-500">No tickets found.</div>
       ) : (
         <div className="grid gap-3">
-          {tickets.map((t) => {
-            const breached = isBreached(t);
-            return (
-              <Link to={`/tickets/${t._id}`} key={t._id} className="block">
-                <Card className="hover:shadow-md transition-shadow">
-                  <CardBody>
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-                          {t.title || "Untitled"}
-                        </h3>
-                        {t.description && (
-                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                            {t.description}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex flex-col items-end gap-1">
-                        <StatusBadge status={t.status} />
-                        <div className="text-[11px] text-gray-500">
-                          {new Date(t.createdAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-3 flex items-center gap-3 text-xs text-gray-600">
-                      {t.SLA_deadline && (
-                        <span className={breached ? "text-rose-600" : ""}>
-                          Due: {new Date(t.SLA_deadline).toLocaleDateString()}
-                        </span>
-                      )}
-                      {breached && (
-                        <span className="inline-flex items-center gap-1 text-rose-600">
-                          • SLA breached
-                        </span>
-                      )}
-                    </div>
-                  </CardBody>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+          {tickets.map((t) => (
+            <Link
+              key={t._id}
+              to={`/tickets/${t._id}`}
+              className={`bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition ${
+                isBreached(t) ? "border-red-400" : ""
+              }`}
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-lg font-medium text-gray-900">
+                    {t.title || "Untitled"}
+                  </h2>
+                  <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                    {t.description}
+                  </p>
+                </div>
+                <div className="text-right text-xs text-gray-500">
+                  {new Date(t.createdAt).toLocaleDateString()}
+                </div>
+              </div>
 
-      {!loading && hasMore && (
-        <div className="flex justify-center mt-6">
-          <Button onClick={() => fetchTickets({ reset: false })} disabled={loadingMore}>
-            {loadingMore ? "Loading..." : "Load more"}
-          </Button>
+              {t.SLA_deadline && (
+                <p
+                  className={`mt-2 text-xs ${
+                    isBreached(t) ? "text-red-600 font-medium" : "text-gray-500"
+                  }`}
+                >
+                  SLA due: {new Date(t.SLA_deadline).toLocaleDateString()}
+                </p>
+              )}
+            </Link>
+          ))}
         </div>
       )}
     </div>
