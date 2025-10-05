@@ -1,6 +1,10 @@
 import { useState } from "react";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
+import { Card, CardBody, CardHeader, CardTitle } from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
+import { Field, Input, Label } from "../components/ui/Input";
+import { Textarea } from "../components/ui/Textarea";
 
 export default function NewTicket() {
   const [title, setTitle] = useState("");
@@ -39,55 +43,59 @@ export default function NewTicket() {
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-8">
-      <h1 className="text-2xl font-semibold mb-6">Create New Ticket</h1>
+    <div className="max-w-2xl mx-auto mt-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Create New Ticket</CardTitle>
+        </CardHeader>
+        <CardBody>
+          {error && (
+            <div className="mb-4 text-sm text-rose-700">{error}</div>
+          )}
+          <form onSubmit={handleSubmit} className="grid gap-4">
+            <Field>
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter ticket title"
+                required
+              />
+            </Field>
 
-      {error && <p className="text-red-600 mb-4">{error}</p>}
+            <Field>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Describe the issue..."
+                rows={6}
+                required
+              />
+            </Field>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block mb-1 font-medium">Title</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full border border-gray-200 rounded-md p-2"
-            placeholder="Enter ticket title"
-            required
-          />
-        </div>
+            <Field>
+              <Label htmlFor="sla">SLA deadline</Label>
+              <Input
+                id="sla"
+                type="date"
+                value={SLA_deadline}
+                onChange={(e) => setSLA_deadline(e.target.value)}
+                required
+              />
+            </Field>
 
-        <div>
-          <label className="block mb-1 font-medium">Description</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full border border-gray-200 rounded-md p-3 h-28"
-            placeholder="Describe the issue..."
-            rows={5}
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1 font-medium">SLA deadline</label>
-          <input
-            type="date"
-            value={SLA_deadline}
-            onChange={(e) => setSLA_deadline(e.target.value)}
-            className="w-full border border-gray-200 rounded-md p-2"
-            required
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="inline-flex items-center bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
-        >
-          {loading ? "Creating..." : "Create Ticket"}
-        </button>
-      </form>
+            <div className="pt-2">
+              <Button type="submit" disabled={loading}>
+                {loading ? "Creating..." : "Create Ticket"}
+              </Button>
+            </div>
+          </form>
+        </CardBody>
+      </Card>
     </div>
   );
 }

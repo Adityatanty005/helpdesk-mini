@@ -5,6 +5,7 @@ import TicketList from "./pages/TicketList";
 import TicketNew from "./pages/NewTicket";
 import TicketDetail from "./pages/TicketDetails";
 import { getUser, clearToken, clearUser } from "./utils/auth";
+import { Button, ButtonLink } from "./components/ui/Button";
 
 function Header() {
   const user = getUser();
@@ -17,35 +18,31 @@ function Header() {
   };
 
   return (
-    <header className="bg-white shadow-sm">
-      <div className="max-w-[var(--max-w-content)] mx-auto px-4 py-4 flex items-center justify-between">
-        <Link to="/tickets" className="text-xl font-bold text-indigo-600">
-          Helpdesk
+    <header className="sticky top-0 z-10 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-b border-gray-100">
+      <div className="max-w-[var(--max-w-content)] mx-auto px-4 py-3 flex items-center justify-between">
+        <Link to="/tickets" className="text-lg sm:text-xl font-semibold text-gray-900">
+          <span className="text-indigo-600">Help</span>Desk
         </Link>
-        <nav className="flex items-center gap-4">
-          <Link
-            to="/tickets/new"
-            className="text-sm text-indigo-600 hover:underline"
-          >
+        <nav className="flex items-center gap-2 sm:gap-3">
+          <ButtonLink to="/tickets/new" size="sm" className="hidden sm:inline-flex">
             + New Ticket
-          </Link>
+          </ButtonLink>
           {user ? (
-            <div className="flex items-center gap-3">
-              <div className="text-sm text-gray-700">{user.name}</div>
-              <button
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="hidden sm:block text-sm text-gray-700">{user.name}</div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-rose-600 hover:text-rose-700 hover:bg-rose-50"
                 onClick={handleLogout}
-                className="text-sm text-red-500 hover:underline"
               >
                 Logout
-              </button>
+              </Button>
             </div>
           ) : (
-            <Link
-              to="/login"
-              className="text-sm text-indigo-600 hover:underline"
-            >
+            <ButtonLink to="/login" variant="ghost" size="sm">
               Login
-            </Link>
+            </ButtonLink>
           )}
         </nav>
       </div>
@@ -57,7 +54,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="max-w-[var(--max-w-content)] mx-auto p-4">
+      <main className="max-w-[var(--max-w-content)] mx-auto p-4 sm:p-6">
         <Routes>
           <Route path="/" element={<Navigate to="/tickets" />} />
           <Route path="/login" element={<LoginPage />} />
