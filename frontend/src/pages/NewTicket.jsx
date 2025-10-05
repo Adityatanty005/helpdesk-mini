@@ -1,29 +1,34 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
-import { getToken } from "../utils/auth";
+import { useNavigate } from "react-router-dom";
 
 export default function NewTicket() {
-  const [form, setForm] = useState({ title: "", description: "", category: "" });
-  const [error, setError] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [SLA_deadline, setSLA_deadline] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
+    setError("");
+
+    if (!SLA_deadline) {
+      setError("Please provide an SLA deadline.");
+      setLoading(false);
+      return;
+    }
 
     try {
-      await api.post("/api/tickets", form, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
+      const newTicket = { title, description };
+      if (SLA_deadline) newTicket.SLA_deadline = SLA_deadline;
+      await api.post("/api/tickets", newTicket);
+
       navigate("/tickets");
     } catch (err) {
+      console.error(err);
       setError("Failed to create ticket. Please try again.");
     } finally {
       setLoading(false);
@@ -31,69 +36,139 @@ export default function NewTicket() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-10">
-      <div className="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-md border border-gray-100">
-        <h1 className="text-2xl font-semibold text-indigo-600 mb-6">
-          Create a New Ticket
-        </h1>
+    <div className="animate-fade-in max-w-3xl mx-auto">
+      <button
+        onClick={() => navigate("/tickets")}
+        className="btn-ghost mb-6 -ml-2"
+      >
+        <svg
+          className="w-5 h-5 mr-1"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
+        Back to Tickets
+      </button>
 
-        {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+      <div className="card p-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-neutral-900 mb-2">
+            Create New Ticket
+          </h1>
+          <p className="text-neutral-600">
+            Submit a new support request to our team
+          </p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div className="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg text-sm mb-6">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Title
+            <label
+              htmlFor="title"
+              className="block text-sm font-medium text-neutral-700 mb-2"
+            >
+              Title <span className="text-error-500">*</span>
             </label>
             <input
-              name="title"
-              placeholder="Short issue title"
-              value={form.title}
-              onChange={handleChange}
+              id="title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="input-field"
+              placeholder="Brief summary of your issue"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
+            <label
+              htmlFor="description"
+              className="block text-sm font-medium text-neutral-700 mb-2"
+            >
+              Description <span className="text-error-500">*</span>
             </label>
             <textarea
-              name="description"
-              placeholder="Describe the issue in detail"
-              rows={4}
-              value={form.description}
-              onChange={handleChange}
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="input-field min-h-[160px] resize-y"
+              placeholder="Provide detailed information about your issue..."
+              rows={6}
               required
             />
+            <p className="mt-2 text-sm text-neutral-500">
+              Include any relevant details that will help us resolve your issue
+              faster
+            </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category
-            </label>
-            <select
-              name="category"
-              value={form.category}
-              onChange={handleChange}
-              required
+            <label
+              htmlFor="sla_deadline"
+              className="block text-sm font-medium text-neutral-700 mb-2"
             >
-              <option value="">Select category</option>
-              <option value="technical">Technical</option>
-              <option value="billing">Billing</option>
-              <option value="account">Account</option>
-              <option value="other">Other</option>
-            </select>
+              SLA Deadline <span className="text-error-500">*</span>
+            </label>
+            <input
+              id="sla_deadline"
+              type="date"
+              value={SLA_deadline}
+              onChange={(e) => setSLA_deadline(e.target.value)}
+              className="input-field"
+              min={new Date().toISOString().split("T")[0]}
+              required
+            />
+            <p className="mt-2 text-sm text-neutral-500">
+              Select the deadline for this ticket resolution
+            </p>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition ${
-              loading ? "opacity-70 cursor-not-allowed" : ""
-            }`}
-          >
-            {loading ? "Creating..." : "Create Ticket"}
-          </button>
+          <div className="flex items-center gap-3 pt-4 border-t border-neutral-200">
+            <button type="submit" disabled={loading} className="btn-primary">
+              {loading ? (
+                <>
+                  <div className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  Create Ticket
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/tickets")}
+              className="btn-secondary"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
     </div>

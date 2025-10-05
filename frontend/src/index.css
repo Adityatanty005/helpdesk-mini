@@ -2,3 +2,163 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    /* neutral.50: #fafafa, neutral.900: #171717 (from tailwind.config.js) */
+    background-color: #fafafa;
+    color: #171717;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white border border-neutral-200 rounded-xl;
+    /* soft shadow (from tailwind.config.js) */
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 1px 3px 1px rgb(0 0 0 / 0.05);
+  }
+  .card-hover {
+    @apply card transition-shadow;
+  }
+  .card-hover:hover {
+    /* medium shadow */
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -2px rgb(0 0 0 / 0.05);
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg text-white focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed;
+    /* primary-600: #4f46e5, primary-700: #4338ca, primary-400 (ring): #818cf8 */
+    background-color: #4f46e5;
+  }
+  .btn-primary:hover {
+    background-color: #4338ca;
+  }
+  .btn-primary:focus {
+    box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.28);
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg border border-neutral-300 bg-white text-neutral-700 focus:outline-none;
+  }
+  .btn-secondary:hover {
+    background-color: #fafafa;
+  }
+  .btn-secondary:focus {
+    border-color: #d1d5db; /* neutral-300 */
+    box-shadow: 0 0 0 4px rgba(209, 213, 219, 0.38); /* neutral-300/60 */
+  }
+  .btn-ghost {
+    @apply inline-flex items-center px-3 py-2 rounded-lg text-neutral-600 hover:bg-neutral-100;
+  }
+
+  .input-field {
+    /* spacing and base styles */
+    width: 100%;
+    padding: 0.5rem 0.75rem; /* px-3 py-2 */
+    border-radius: 0.5rem; /* rounded-lg */
+    border: 1px solid #d1d5db; /* neutral-300 */
+    background-color: #ffffff;
+    color: #171717; /* neutral-900 */
+  }
+  .input-field::placeholder {
+    color: #9ca3af; /* placeholder-neutral-400 */
+  }
+  .input-field:focus {
+    outline: none;
+    border-color: #818cf8; /* primary-400 */
+    box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.28); /* primary-400/50 */
+  }
+
+  .badge-success {
+    @apply inline-flex items-center px-2 py-1 text-xs font-medium rounded-full;
+    background-color: #ecfdf5; /* success-50 */
+    color: #10b981; /* success-600 */
+  }
+  .badge-warning {
+    @apply inline-flex items-center px-2 py-1 text-xs font-medium rounded-full;
+    background-color: #fffbeb; /* warning-50 */
+    color: #d97706; /* warning-600 */
+  }
+  .badge-neutral {
+    @apply inline-flex items-center px-2 py-1 text-xs font-medium rounded-full;
+    background-color: #f5f5f5; /* neutral-100 */
+    color: #404040; /* neutral-700 */
+  }
+}
+
+@layer utilities {
+  /* custom shadows (so @apply shadow-soft/medium works) */
+  .shadow-soft {
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 1px 3px 1px rgb(0 0 0 / 0.05);
+  }
+  .shadow-medium {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -2px rgb(0 0 0 / 0.05);
+  }
+
+  /* primary palette */
+  .bg-primary-50 {
+    background-color: #eef2ff;
+  }
+  .bg-primary-100 {
+    background-color: #e0e7ff;
+  }
+  .bg-primary-200 {
+    background-color: #c7d2fe;
+  }
+  .bg-primary-300 {
+    background-color: #a5b4fc;
+  }
+  .bg-primary-400 {
+    background-color: #818cf8;
+  }
+  .bg-primary-500 {
+    background-color: #6366f1;
+  }
+  .bg-primary-600 {
+    background-color: #4f46e5;
+  }
+  .bg-primary-700 {
+    background-color: #4338ca;
+  }
+  .text-primary-600 {
+    color: #4f46e5;
+  }
+
+  /* success/warning/error */
+  .bg-success-50 {
+    background-color: #ecfdf5;
+  }
+  .text-success-600 {
+    color: #10b981;
+  }
+  .bg-warning-50 {
+    background-color: #fffbeb;
+  }
+  .text-warning-600 {
+    color: #d97706;
+  }
+  .bg-error-50 {
+    background-color: #fef2f2;
+  }
+  .text-error-600 {
+    color: #ef4444;
+  }
+
+  /* neutral helpers */
+  .bg-neutral-50 {
+    background-color: #fafafa;
+  }
+  .bg-neutral-100 {
+    background-color: #f5f5f5;
+  }
+  .text-neutral-700 {
+    color: #404040;
+  }
+}

@@ -84,6 +84,10 @@ export const getTicketById = async (req, res) => {
       .populate({
         path: "comments",
         populate: { path: "author", select: "name email" },
+      })
+      .populate({
+        path: "events.actor",
+        select: "name email",
       });
 
     if (!ticket)
